@@ -1,0 +1,95 @@
+selected,metric,category,strata,description
+Y,strct_mPAI_b10,volume,lower ,mean PAI increment below 10m
+N,strct_prop_int_btw_0_10m,intensity,lower ,proportion “total” intensity btw 0-10m
+N,strct_prop_ag_int_btw_0_10m,intensity,lower ,proportion “aboveground” intensity btw 0-10m
+Y,strct_prop_int_below_10m,intensity,lower ,proportion “total” intensity below 10m
+N,strct_CBD,fire fuels,full ,canopy bulk density (total PAI above CBH / height above CBH)
+N,strct_CBH,fire fuels,full ,canopy fuel load - tAGBD above CBH
+N,strct_CFL,fire fuels,full ,canopy base height - peak RH in peak PAI inc (3m if below 0)
+N,strct_cv,heterogeneity,full ,cv of PAI increments
+N,strct_D,heterogeneity,full ,Simpson's D of PAI increments - represents the probability that two randomly selected individuals will be of the same species; more influenced by evenness than richness
+N,strct_D1,heterogeneity,full ,Hill #1 of PAI increments - or exp(H)
+N,strct_D2,heterogeneity,full ,Hill #2 of PAI increments - 1/D
+N,strct_E,heterogeneity,full ,equitability of PAI increments - is calculated from Simpson’s effective number of species divided by the observed number of species.
+N,strct_Gini,heterogeneity,full ,Gini Coefficient of PAI increments
+N,strct_GS,heterogeneity,full ,"Gini-Simpson of PAI increments - Since this probability decreases with increasing species richness of the community, the Simpson index also decreases with richness, which is not too intuitive."
+Y,strct_H,heterogeneity,full ,Shannon's H of PAI increments
+N,strct_HxP,heterogeneity,full ,Shannon's H of PAI increments times mean PAI (normalized)
+N,strct_J,heterogeneity,full ,Shannon’s evenness (also called Pielou’s J) of PAI increments
+N,strct_JxP,heterogeneity,full ,Shannon's evenness of PAI increments times mean PAI (normalized)
+Y,strct_nmode,heterogeneity,full ,number of modes in the waveform
+N,strct_H_b15,heterogeneity,lower ,Shannon's H of PAI increments below 15m
+N,strct_H_b15_nz,heterogeneity,lower ,Shannon's H of PAI increments below 15m no zeros (PAI>0 at 15m)
+N,strct_H_b30,heterogeneity,lower ,Shannon's H of PAI increments below 30m
+N,strct_H_b30_nz,heterogeneity,lower ,Shannon's H of PAI increments below 30m no zeros (PAI>0 at 30m)
+N,strct_J_b15_nz,heterogeneity,lower ,Pielou's J of PAI increments below 15m no zeros (PAI>0 at 10m)
+N,strct_J_b30_nz,heterogeneity,lower ,Pielou's J of PAI increments below 30m no zeros (PAI>0 at 25m)
+N,strct_J_sparse_b15,heterogeneity,lower ,Pielou's J of PAI increments below 15m (PAI>0.1 at 15m)
+N,strct_J_sparse_b30,heterogeneity,lower ,Pielou's J of PAI increments below 30m (PAI>0.1 at 30m)
+N,strct_J_sparse_b45,heterogeneity,lower ,Pielou's J of PAI increments below 45m (PAI>0.1 at 45m)
+N,strct_H_btw1545,heterogeneity,middle ,Shannon's H of PAI increments between 15-45m (PAI>0 at 15m)
+N,strct_H_sparse_btw1545,heterogeneity,middle ,Shannon's H of PAI increments between 15-45m (PAI>0 at 45m)
+N,strct_J_btw1545,heterogeneity,middle ,Pielou's J of PAI increments between 15-45m (PAI>0 at 20m)
+N,strct_J_sparse_btw1545,heterogeneity,middle ,Pielou's J of PAI increments between 15-45m (PAI>0 at 50m)
+N,strct_H_a15,heterogeneity,upper ,Shannon's H of PAI increments above 15m
+N,strct_H_a15_nz,heterogeneity,upper ,Shannon's H of PAI increments above 15m no zeros (PAI>0 at 20m)
+N,strct_H_a30,heterogeneity,upper ,Shannon's H of PAI increments above 30m
+N,strct_H_a30_nz,heterogeneity,upper ,Shannon's H of PAI increments above 30m no zeros (PAI>0 at 35m)
+N,strct_J_a15_nz,heterogeneity,upper ,Pielou's J of PAI increments above 15m no zeros (PAI>0 at 20m)
+N,strct_J_a30_nz,heterogeneity,upper ,Pielou's J of PAI increments above 30m no zeros (PAI>0 at 35m)
+N,strct_sd,heterogeneity,upper ,standard deviation of PAI increments
+N,strct_PAI_inc_0_5,increment,lower ,PAI between 5-10m
+N,strct_PAI_inc_5_10,increment,lower ,PAI between 10-15m
+N,strct_PAI_inc_10_15,increment,lower ,PAI between 0-5m
+N,strct_PAI_inc_15_20,increment,middle ,PAI between 15-20m
+N,strct_RH_0,intensity,full ,relative height 0% intensity
+N,strct_RH_10,intensity,full ,relative height 10% intensity
+N,strct_RH_15,intensity,full ,relative height 15% intensity
+N,strct_RH_20,intensity,full ,relative height 20% intensity
+Y,strct_RH_25,intensity,full ,relative height 25% intensity
+N,strct_RH_30,intensity,full ,relative height 30% intensity
+N,strct_RH_35,intensity,full ,relative height 35% intensity
+N,strct_RH_40,intensity,full ,relative height 40% intensity
+N,strct_RH_45,intensity,full ,relative height 45% intensity
+N,strct_RH_5,intensity,full ,relative height 5% intensity
+Y,strct_RH_50,intensity,full ,relative height 50% intensity
+N,strct_RH_55,intensity,full ,relative height 55% intensity
+N,strct_RH_60,intensity,full ,relative height 60% intensity
+N,strct_RH_65,intensity,full ,relative height 65% intensity
+N,strct_RH_70,intensity,full ,relative height 70% intensity
+Y,strct_RH_75,intensity,full ,relative height 75% intensity
+N,strct_RH_80,intensity,full ,relative height 80% intensity
+N,strct_RH_85,intensity,full ,relative height 85% intensity
+N,strct_RH_90,intensity,full ,relative height 90% intensity
+N,strct_RH_92,intensity,full ,relative height 92% intensity
+N,strct_RH_95,intensity,full ,relative height 95% intensity
+Y,strct_RH_98,intensity,full ,relative height 98% intensity
+N,strct_RH_99,intensity,full ,relative height 99% intensity
+N,strct_RH_100,intensity,full ,relative height 100% intensity
+N,strct_CR,vertical distribution,full ,canopy ratio - (RH99-RH25)/RH99
+N,strct_PAVD_maxH,vertical distribution,full ,Height at maximum PAVD
+N,strct_skew,vertical distribution,full ,skewness of PAI increments
+Y,strct_VDR,vertical distribution,full ,vertical distribution ratio - (RH99-RH50)/RH99
+Y,strct_cover,volume,full ,cover (%)
+N,strct_mPAI,volume,full ,mean PAI increment
+Y,strct_tAGBD,volume,full ,total aboveground biomass density
+Y,strct_tPAI,volume,full ,total plant area index
+N,strct_tPAVD,volume,full ,total plant area volume density
+N,strct_mPAI_sparse_b5,volume,lower ,mean PAI increment below 5m (PAI>0.1 at 5m)
+N,strct_mPAI_sparse_b10,volume,lower ,mean PAI increment below 10m (PAI>0.1 at 10m)
+N,strct_mPAI_sparse_b15,volume,lower ,mean PAI increment below 15m (PAI>0.1 at 15m)
+N,strct_mPAI_sparse_b30,volume,lower ,mean PAI increment below 30m (PAI>0.1 at 30m)
+N,strct_mPAI_sparse_b45,volume,lower ,mean PAI increment below 45m (PAI>0.1 at 45m)
+N,strct_PAI_0,volume,lower ,PAI at 0m
+N,strct_PAI_5,volume,lower ,PAI at 5m
+N,strct_PAI_10,volume,lower ,PAI at 10m
+N,strct_PAI_15,volume,lower ,PAI at 15m
+N,strct_mPAI_btw1545,volume,middle ,mean PAI increment between 15-45m (PAI>0 at 15m)
+N,strct_mPAI_sparse_btw1545,volume,middle ,mean PAI increment between 15-45m (PAI>0.1 at 50m)
+N,strct_PAI_20,volume,middle ,PAI at 20m
+N,strct_tPAI_btw1545,volume,middle ,total plant area index between 15-45m (PAI>0 at 15m)
+N,strct_tPAI_sparse_btw1545,volume,middle ,total plant area index between 15-45m (PAI>0 at 45m)
+N,strct_tPAI_a15,volume,upper ,total plant area index above 15m
+N,strct_tPAI_a15_nz,volume,upper ,total plant area index above 15m no zeros (PAI>0 at 20m)
+N,strct_tPAI_a30,volume,upper ,total plant area index above 30m
+N,strct_tPAI_a30_nz,volume,upper ,total plant area index above 30m no zeros (PAI>0 at 35m)
