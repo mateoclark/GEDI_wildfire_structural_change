@@ -38,4 +38,7 @@ matthew.clark@sonoma.edu
 *2_strct_sev_2024_8_9.zip*
 - GEDI structural metrics CSV file
 
+*4_t_w.zip*
+- Toposlope and weather variables associated with GEDI shots
+
 
