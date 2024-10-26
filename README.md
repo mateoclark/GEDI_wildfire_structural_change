@@ -1,7 +1,7 @@
 # GEDI_wildfire_structural_change
  Code and data for paper "Changes in GEDI-based measures of forest structure after large California wildfires relative to pre-fire conditions"
 
-Clark, Matthew L. and Hakkenberg, Christopher R. and Bailey, Tim and Burns, Patrick and Goetz, Scott, Changes in Gedi-Based Measures of Forest Structure after Large California Wildfires Relative to Pre-Fire Conditions.  
+Clark, Matthew L. and Hakkenberg, Christopher R. and Bailey, Tim and Burns, Patrick and Goetz, Scott, Changes in GEDI-Based Measures of Forest Structure after Large California Wildfires Relative to Pre-Fire Conditions.  
 Submitted for review on Oct 19, 2024. Non-peer reviewed version: http://dx.doi.org/10.2139/ssrn.4993482
 
 Maintained by:
