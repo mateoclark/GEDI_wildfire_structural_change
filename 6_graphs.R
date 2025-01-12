@@ -1,10 +1,12 @@
-# Graphs for manuscript
+# Graphs for paper "Changes in GEDI-based measures of forest structure after large California wildfires 1 relative to pre-fire conditions"
+# Remote Sensing of Environment
 
 # Matthew L. Clark, Ph.D.
 # Department of Geography, Environment, and Planning
 # Sonoma State University, California USA
 # matthew.clark@sonoma.edu
-# Version 10/19/2024
+# Version 01/12/2025
+
 
 library(ggpubr)
 library(ggplot2)
@@ -17,30 +19,28 @@ library(scales)
 
 
 # working directory
-indir <- "G:/Shared drives/CALFIRE_GEDI/Manuscripts/RQ2_wildfire_change_in_footprint_metrics"
-#indir <- "E:/active/project/calfire_gedi/rq2_paper"
+indir <- "/GEDI_wildfire_structural_change"
 
 # distance between pairs
-#distance <- 30
 distance <- 45
 
 # allowable absolute difference in elevation (m)
 delta_elev <- 10
 
 # allowable growth in tAGBD Mg/ha/year
-biomass <- 99999
+biomass <- 99999 # not used when set very high
 
 # lookup
 metricLookup <- data.frame(
   metric = c("strct_H","strct_nmode","strct_VDR","strct_cover","strct_tAGBD","strct_tPAI",
              "strct_mPAI_b10","strct_prop_int_btw_0_10m","strct_prop_int_below_10m","strct_RH_10","strct_RH_25",
              "strct_RH_50","strct_RH_75","strct_RH_98"),
-  labels = c("FHD","nmode","aVDR","Cover","tAGBD","tPAI","mPAI0to10","WI0to10m","WIBelow10m",
+  labels = c("FHD","nmode","aVDR","Cover","tAGBD","tPAI","mPAI0to10","RE0to10m","REBelow10m",
              "RH10","RH25","RH50","RH75","RH98")
 )
 
 # GEDI metrics to use
-metricList <- read.csv(paste0(indir,"/data/gedi_structure_variables_reduced_pai_240927.csv"))  %>% filter(selected == "Y")
+metricList <- read.csv(paste0(indir,"/gedi_structure_variables_reduced_pai_240927.csv"))  %>% filter(selected == "Y")
 metrics <- left_join(metricList, metricLookup, by="metric") %>% select(metric, labels)
 
 ###############################################################################
@@ -48,18 +48,18 @@ metrics <- left_join(metricList, metricLookup, by="metric") %>% select(metric, l
 ###############################################################################
 
 # version date
-version <- "241012"
+version <- "240822"
 
 pal <- RColorBrewer::brewer.pal(8, "Set2")
 
 # read change metrics file
-file <- paste0(indir,"/data/master_gedi_fire_difference_",distance,"m_240822.csv")
+file <- paste0(indir,"/master_gedi_fire_difference_",distance,"m_",version,".csv")
 df <- read.csv(file)
 
 # get wildfire burn severity classes
 mtbsCodes <- data.frame(
-  mtbs_classP = c(0, 1, 2, 3, 4),
-  FireSeverityMTBS = c("Control","Unchanged", "Low","Moderate","High")
+  mtbs_classP = c(0, 1, 2, 3, 4, 5),
+  FireSeverityMTBS = c("Control","Unchanged", "Low","Moderate","High","Unchanged") # treat class 5 (growth) as unchanged as small numbers
 )
 df <- left_join(df,mtbsCodes,by="mtbs_classP")
 df$FireSeveritydNBRMillerThode <- ifelse(df$mtbs_dnbrOW >= 367, "High",ifelse(df$mtbs_dnbrOW >= 177, "Moderate",ifelse(df$mtbs_dnbrOW > 41, "Low", "Unchanged"))) 
@@ -140,8 +140,8 @@ combinedFootprint <- ggarrange(plotBurnSeverityForestClass,plotTimeAfter,
                           align = "h")
 dev.new();print(combinedFootprint)
 
-outFile <- paste0(indir,"/figures/gedi_paired_footprints_abgd",biomass,"Mghayr_elev",delta_elev,"m_dist",distance,"m_",version,".png")
-ggsave(outFile, width = 6, height = 3, units = "in", dpi=200)
+outFile <- paste0(indir,"/gedi_paired_footprints_abgd",biomass,"Mghayr_elev",delta_elev,"m_dist",distance,"m_",version,".png")
+ggsave(outFile, width = 6, height = 3, units = "in", dpi=600)
 
 ###############################################################################
 ### Tables for results section
@@ -175,7 +175,7 @@ dataFiltered <- dataFiltered %>%
   tAGBD = pre_strct_tAGBD,
   tPAI = pre_strct_tPAI,          
   mPAI0to10 = pre_strct_mPAI_b10,
-  IntensityBelow10m = pre_strct_prop_int_below_10m,
+  REBelow10m = pre_strct_prop_int_below_10m,
   RH25 = pre_strct_RH_25,
   RH50 = pre_strct_RH_50,
   RH75 = pre_strct_RH_75,
@@ -205,14 +205,13 @@ summarizeColumns <- function(data, columns) {
 
 dataFiltered <- dataFiltered %>% rename(
   FHD = H,
-  WIBelow10m = IntensityBelow10m,
   aVDR = VDR
 )
 
 # statistics for both control and burned area
 summaryResult <- summarizeColumns(dataFiltered, c("dNBR","timeAfter","topoSlope","et","vpd","windSpeed",
                                                   "FHD","nmode","aVDR","Cover","tAGBD","tPAI","mPAI0to10",          
-                                                  "WIBelow10m","RH25","RH50","RH75","RH98"))
+                                                  "REBelow10m","RH25","RH50","RH75","RH98"))
 # Print the summary
 print(summaryResult)
 
@@ -220,7 +219,7 @@ print(summaryResult)
 dataFilteredFire <- dataFiltered %>% filter(FireSeveritydNBRMillerThode != "Control")
 summaryResultFire <- summarizeColumns(dataFilteredFire, c("dNBR","timeAfter","topoSlope","et","vpd","windSpeed",
                                                           "FHD","nmode","aVDR","Cover","tAGBD","tPAI","mPAI0to10",          
-                                                          "WIBelow10m","RH25","RH50","RH75","RH98"))
+                                                          "REBelow10m","RH25","RH50","RH75","RH98"))
 
 # Print the summary
 print(summaryResultFire)
@@ -246,7 +245,7 @@ ylimits = c(-0.5,0.5)
 maxAfter <- 365 
 minAfter <- 0
 maxBefore <- 730 # 2 years
-file <- paste0(indir,"/data/nlme_repeated_anova_spatial_zscore_abgd",biomass,"Mghayr_elev",delta_elev,"m_dist",distance,"m_maxBefore",maxBefore,"_minAfter",minAfter,"_maxAfter",maxAfter,"_",version,".csv")
+file <- paste0(indir,"/nlme_repeated_anova_spatial_zscore_abgd",biomass,"Mghayr_elev",delta_elev,"m_dist",distance,"m_maxBefore",maxBefore,"_minAfter",minAfter,"_maxAfter",maxAfter,"_",version,".csv")
 df <- read.csv(file) %>% filter(metric %in% metrics$metric)
 
 df$effectTreatment <- df$spatialInterceptEst + df$spatialTreatmentEst
@@ -268,12 +267,12 @@ if (length(unique(df1$significant)) == 1) pattern = "none" else pattern = c("str
 # with hatch for significant
 plot1 <- ggplot(df1, aes(x = metricFactor, y = zscore, fill = effectFactor, pattern = significant)) +
   geom_bar_pattern(
-                   position = "dodge", stat = "identity",
-                   pattern_density = 0.1,
-                   pattern_fill = "black",
-                   pattern_angle = 45,
-                   pattern_spacing = 0.02,
-                   ) +
+    position = "dodge", stat = "identity",
+    pattern_density = 0.1,
+    pattern_fill = "black",
+    pattern_angle = 45,
+    pattern_spacing = 0.02,
+  ) +
   theme_bw() +
   labs(title = "A. Within 1 year of fire", y = "Normalized Effect") +
   scale_pattern_manual(values = pattern) + 
@@ -282,7 +281,7 @@ plot1 <- ggplot(df1, aes(x = metricFactor, y = zscore, fill = effectFactor, patt
          fill = guide_legend(override.aes = list(pattern = "none"))) +
   coord_cartesian(ylim = ylimits) +
   scale_x_discrete(labels = c("FHD","nmode","aVDR","Cover","tAGBD","tPAI",expression(mPAI["0-10m"]),
-                              expression(WI["<10m"]),"RH25","RH50","RH75","RH98")) +
+                              expression(RE["<10m"]),"RH25","RH50","RH75","RH98")) +
   theme(
     plot.title = element_text( size = 12),
     axis.title.x = element_blank(),
@@ -292,7 +291,7 @@ plot1 <- ggplot(df1, aes(x = metricFactor, y = zscore, fill = effectFactor, patt
     legend.text = element_text(size = 12),
     legend.title = element_blank(),
     legend.key.width = unit(.1, "in")
-    )
+  )
 
 #dev.new();print(plot1)
 plot_list[[1]] = plot1
@@ -301,7 +300,7 @@ plot_list[[1]] = plot1
 maxAfter <- 730
 minAfter <- 365
 maxBefore <- 730 # 2 years
-file <- paste0(indir,"/data/nlme_repeated_anova_spatial_zscore_abgd",biomass,"Mghayr_elev",delta_elev,"m_dist",distance,"m_maxBefore",maxBefore,"_minAfter",minAfter,"_maxAfter",maxAfter,"_",version,".csv")
+file <- paste0(indir,"/nlme_repeated_anova_spatial_zscore_abgd",biomass,"Mghayr_elev",delta_elev,"m_dist",distance,"m_maxBefore",maxBefore,"_minAfter",minAfter,"_maxAfter",maxAfter,"_",version,".csv")
 df <- read.csv(file) %>% filter(metric %in% metrics$metric)
 
 df$effectTreatment <- df$spatialInterceptEst + df$spatialTreatmentEst
@@ -315,7 +314,7 @@ df2$effectFactor <- factor(df2$effect, levels = c("effectTreatment", "effectTime
                            labels = c("Burned", "Timing","Interaction"))
 df2$metricFactor <- factor(df2$metric, 
                            levels = c("strct_H","strct_nmode","strct_VDR","strct_cover","strct_tAGBD","strct_tPAI","strct_mPAI_b10",
-                                     "strct_prop_int_below_10m","strct_RH_25","strct_RH_50","strct_RH_75","strct_RH_98"))
+                                      "strct_prop_int_below_10m","strct_RH_25","strct_RH_50","strct_RH_75","strct_RH_98"))
 if (length(unique(df2$significant)) == 1) pattern = "none" else pattern = c("stripe", "none")
 
 # with hatch for significant
@@ -333,7 +332,7 @@ plot2 <- ggplot(df2, aes(x = metricFactor, y = zscore, fill = effectFactor, patt
          fill = guide_legend(override.aes = list(pattern = "none"))) +
   coord_cartesian(ylim = ylimits) +
   scale_x_discrete(labels = c("FHD","nmode","aVDR","Cover","tAGBD","tPAI",expression(mPAI["<10m"]),
-                              expression(WI["<10m"]),"RH25","RH50","RH75","RH98")) +
+                              expression(RE["<10m"]),"RH25","RH50","RH75","RH98")) +
   theme(
     plot.title = element_text( size = 12),
     axis.title.x = element_blank(),
@@ -352,7 +351,7 @@ plot_list[[2]] = plot2
 maxAfter <- 1500
 minAfter <- 730
 maxBefore <- 730 # 2 years
-file <- paste0(indir,"/data/nlme_repeated_anova_spatial_zscore_abgd",biomass,"Mghayr_elev",delta_elev,"m_dist",distance,"m_maxBefore",maxBefore,"_minAfter",minAfter,"_maxAfter",maxAfter,"_",version,".csv")
+file <- paste0(indir,"/nlme_repeated_anova_spatial_zscore_abgd",biomass,"Mghayr_elev",delta_elev,"m_dist",distance,"m_maxBefore",maxBefore,"_minAfter",minAfter,"_maxAfter",maxAfter,"_",version,".csv")
 df <- read.csv(file) %>% filter(metric %in% metrics$metric)
 
 df$effectTreatment <- df$spatialInterceptEst + df$spatialTreatmentEst
@@ -384,7 +383,7 @@ plot3 <- ggplot(df3, aes(x = metricFactor, y = zscore, fill = effectFactor, patt
          fill = guide_legend(override.aes = list(pattern = "none"))) +
   coord_cartesian(ylim = ylimits) +
   scale_x_discrete(labels = c("FHD","nmode","aVDR","Cover","tAGBD","tPAI",expression(mPAI["<10m"]),
-                              expression(WI["<10m"]),"RH25","RH50","RH75","RH98")) +
+                              expression(RE["<10m"]),"RH25","RH50","RH75","RH98")) +
   theme(
     plot.title = element_text( size = 12),
     axis.title.x = element_blank(),
@@ -403,7 +402,7 @@ plot_list[[3]] = plot3
 maxAfter <- 1500 
 minAfter <- 0
 maxBefore <- 730 # 2 years
-file <- paste0(indir,"/data/nlme_repeated_anova_spatial_zscore_abgd",biomass,"Mghayr_elev",delta_elev,"m_dist",distance,"m_maxBefore",maxBefore,"_minAfter",minAfter,"_maxAfter",maxAfter,"_",version,".csv")
+file <- paste0(indir,"/nlme_repeated_anova_spatial_zscore_abgd",biomass,"Mghayr_elev",delta_elev,"m_dist",distance,"m_maxBefore",maxBefore,"_minAfter",minAfter,"_maxAfter",maxAfter,"_",version,".csv")
 df <- read.csv(file) %>% filter(metric %in% metrics$metric)
 
 df$effectTreatment <- df$spatialInterceptEst + df$spatialTreatmentEst
@@ -435,7 +434,7 @@ plot4 <- ggplot(df4, aes(x = metricFactor, y = zscore, fill = effectFactor, patt
          fill = guide_legend(override.aes = list(pattern = "none"))) +
   coord_cartesian(ylim = ylimits) +
   scale_x_discrete(labels = c("FHD","nmode","aVDR","Cover","tAGBD","tPAI",expression(mPAI["<10m"]),
-                              expression(WI["<10m"]),"RH25","RH50","RH75","RH98")) +
+                              expression(RE["<10m"]),"RH25","RH50","RH75","RH98")) +
   theme(
     plot.title = element_text( size = 12),
     axis.title.x = element_blank(),
@@ -458,8 +457,8 @@ combined <- ggarrange(plotlist = plot_list,
 
 dev.new();print(combined)
 
-outFile <- paste0(indir,"/figures/nlme_repeated_anova_spatial_zscore_abgd",biomass,"Mghayr_elev",delta_elev,"m_dist",distance,"m_",pvalue,"_",version,".png")
-ggsave(outFile, width = 7, height = 6, units = "in", dpi=200)
+outFile <- paste0(indir,"/nlme_repeated_anova_spatial_zscore_abgd",biomass,"Mghayr_elev",delta_elev,"m_dist",distance,"m_",pvalue,"_",version,".png")
+ggsave(outFile, width = 7, height = 6, units = "in", dpi=600)
 
 ###############################################################################
 ### Gather significance stats for ANOVA
@@ -469,7 +468,7 @@ df2$period <- "1-2 years"
 df3$period <- "2-3 years"
 df4$period <- "All years"
 df_combined <- rbind(df1,df2,df3,df4)
-outFile <- paste0(indir,"/data/nlme_repeated_anova_spatial_test_zscore_abgd",biomass,"Mghayr_elev",delta_elev,"m_dist",distance,"m_",pvalue,"_",version,".csv")
+outFile <- paste0(indir,"/nlme_repeated_anova_spatial_test_zscore_abgd",biomass,"Mghayr_elev",delta_elev,"m_dist",distance,"m_",pvalue,"_",version,".csv")
 write.csv(df_combined, outFile, row.names=F)
 
 ###############################################################################
@@ -480,7 +479,7 @@ write.csv(df_combined, outFile, row.names=F)
 version <- "240822"
 
 # read change metrics file
-file <- paste0(indir,"/data/master_gedi_fire_difference_",distance,"m_",version,".csv")
+file <- paste0(indir,"/master_gedi_fire_difference_",distance,"m_",version,".csv")
 df <- read.csv(file)
 
 # get wildfire burn severity classes
@@ -521,7 +520,7 @@ data$FireSeverityOrdered <- factor(data$FireSeveritydNBRMillerThode, levels = c(
 data$typeForestOrdered <- factor(data$typeForest, levels = c("conifer","hardwood","mixed"), labels = c("Conifer","Hardwood","Mixed"))
 
 # GEDI metrics to use
-metricList <- read.csv(paste0(indir,"/data/gedi_structure_variables_reduced_pai_240927.csv"))  %>% filter(selected == "Y")
+metricList <- read.csv(paste0(indir,"/gedi_structure_variables_reduced_pai_240927.csv"))  %>% filter(selected == "Y")
 metrics <- left_join(metricList, metricLookup, by="metric") %>% select(metric, labels)
 
 # prepare data
@@ -552,23 +551,46 @@ zscore<-function(df,z=4){
   return(tmp)
 }
 
+detailedLabel <- function(m){
+  l <- m
+  if (m == "mPAI0to10") {
+    l = expression(paste(mPAI["0-10m"], " (Mean Plant Area Index below 10-m height, or low-stature fuels)"))
+  }else if (m == "REBelow10m") {
+    l = expression(paste(RE["<10m"], " (Proportion of energy below 10-m height)"))
+  }else if (m == "FHD") {
+    l = "FHD (Foliage height diversity)"
+  }else if (m == "Cover") {
+    l = "Cover (Total canopy cover, percent)"
+  }else if (m == "RH98") {
+    l = "RH98 (Top-of-canopy height, meters)"
+  }else if (m == "RH75") {
+    l = "RH75 (Relative height at 75% of returned energy, meters)"
+  }else if (m == "RH50") {
+    l = "RH50 (Relative height at 50% of returned energy, meters)"
+  }else if (m == "RH25") {
+    l = "RH25 (Relative height at 25% of returned energy, meters)"
+  }else if (m == "aVDR") {
+    l = "aVDR (aboveground Vertical Distribution Ratio)"
+  }else if (m == "nmode") {
+    l = "nmode (Number of detected modes in a waveform)"
+  }else if (m == "tPAI") {
+    l = "tPAI (Total Plant Area Index)"
+  }else if (m == "tAGBD") {
+    l = "tAGBD (Total aboveground biomass density, Mg/ha)"
+  }else {
+    l = m
+  }
+}
+
 # make plot for select metrics
-metricsToPlot <- c("FHD","Cover","RH98","mPAI0to10","WIBelow10m")
+metricsToPlot <- c("FHD","Cover","RH98","mPAI0to10","REBelow10m")
 
 pal <- RColorBrewer::brewer.pal(5, "Set2")
 
 plot_list <- list()
 for (i in 1:length(metricsToPlot)) {
   m <- metricsToPlot[i]
-  l <- m
-  if (m == "mPAI0to10") {
-    l = expression(mPAI["0-10m"])
-  }else if (m == "WI0to10m") {
-    l = expression(WI["0-10m"])
-  }else if (m == "WIBelow10m") {
-    l = expression(WI["<10m"])
-  }
-  
+  l <- detailedLabel(m)
   dataSubset = d %>% filter(metric == m)
   dataSubsetFiltered <- dataSubset %>% mutate(zscore = zscore(dataSubset$values)) %>% na.omit() %>% distinct(GEDI_utmX,GEDI_utmY, .keep_all=T)
   if (m == "Cover") dataSubsetFiltered$values = dataSubsetFiltered$values * 100
@@ -644,8 +666,8 @@ combined <- ggarrange(plotlist = plot_list,
 
 dev.new();print(combined)
 
-outFile <- paste0(indir,"/figures/severity_difference_select_metrics_abgd",biomass,"Mghayr_elev",delta_elev,"m_dist",distance,"m_",version,".png")
-ggsave(outFile, width = 7, height = 6, units = "in", dpi=200)
+outFile <- paste0(indir,"/severity_difference_select_metrics_abgd",biomass,"Mghayr_elev",delta_elev,"m_dist",distance,"m_",version,".png")
+ggsave(outFile, width = 7, height = 6, units = "in", dpi=600)
 
 
 # make plot for supplemental extra metrics
@@ -656,15 +678,7 @@ pal <- RColorBrewer::brewer.pal(5, "Set2")
 plot_list <- list()
 for (i in 1:length(metricsToPlot)) {
   m <- metricsToPlot[i]
-  l <- m
-  if (m == "mPAI0to10") {
-    l = expression(mPAI["0-10m"])
-  }else if (m == "WI0to10m") {
-    l = expression(WI["0-10m"])
-  }else if (m == "WIBelow10m") {
-    l = expression(WI["<10m"])
-  }
-  
+  l <- detailedLabel(m)
   dataSubset = d %>% filter(metric == m)
   dataSubsetFiltered <- dataSubset %>% mutate(zscore = zscore(dataSubset$values)) %>% na.omit() %>% distinct(GEDI_utmX,GEDI_utmY, .keep_all=T)
   if (m == "Cover") dataSubsetFiltered$values = dataSubsetFiltered$values * 100
@@ -740,8 +754,8 @@ combined <- ggarrange(plotlist = plot_list,
 
 dev.new();print(combined)
 
-outFile <- paste0(indir,"/figures/severity_difference_extra_metrics_abgd",biomass,"Mghayr_elev",delta_elev,"m_dist",distance,"m_",version,".png")
-ggsave(outFile, width = 7, height = 6, units = "in", dpi=200)
+outFile <- paste0(indir,"/severity_difference_extra_metrics_abgd",biomass,"Mghayr_elev",delta_elev,"m_dist",distance,"m_",version,".png")
+ggsave(outFile, width = 7, height = 6, units = "in", dpi=600)
 
 
 # make plot for RH metrics
@@ -751,7 +765,8 @@ metricsToPlot <- c("RH25","RH50","RH75","RH98")
 pal <- RColorBrewer::brewer.pal(5, "Set2")
 plot_list <- list()
 for (i in 1:length(metricsToPlot)) {
-  m <- metricsToPlot[i]   
+  m <- metricsToPlot[i]
+  l <- detailedLabel(m)
   dataSubset = d %>% filter(metric == m)
   #print(summary(dataSubset$values))
   dataSubsetFiltered <- dataSubset %>% mutate(zscore = zscore(dataSubset$values)) %>% na.omit() %>% distinct(GEDI_utmX,GEDI_utmY, .keep_all=T)
@@ -763,7 +778,7 @@ for (i in 1:length(metricsToPlot)) {
       geom_density(aes(y=after_stat(density)), color='gray50', alpha=0.50, position = "identity") +
       scale_x_continuous(labels = scales::number_format(accuracy = 1),breaks = pretty_breaks(n = 5)) +
       scale_y_continuous(labels = scales::number_format(accuracy = 0.01),breaks = pretty_breaks(n = 3)) +
-      labs(x=m,y="Density") +
+      labs(x=l,y="Density") +
       theme(axis.text.x = element_text(size = 8),
             axis.text.y = element_text(size = 8),
             axis.title.x = element_text(size = 10),
@@ -788,8 +803,8 @@ combined <- ggarrange(plotlist = plot_list,
 
 dev.new();print(combined)
 
-outFile <- paste0(indir,"/figures/severity_difference_rh_metrics_abgd",biomass,"Mghayr_elev",delta_elev,"m_dist",distance,"m_",version,".png")
-ggsave(outFile, width = 7, height = 6, units = "in", dpi=200)
+outFile <- paste0(indir,"/severity_difference_rh_metrics_abgd",biomass,"Mghayr_elev",delta_elev,"m_dist",distance,"m_",version,".png")
+ggsave(outFile, width = 7, height = 6, units = "in", dpi=600)
 
 ###############################################################################
 ### Plots of pre-fire metric distributions by forest type 
@@ -803,10 +818,10 @@ for (i in 1:length(metricsToPlot)) {
   l <- m
   if (m == "mPAI0to10") {
     l = expression(mPAI["0-10m"])
-  }else if (m == "WI0to10m") {
+  }else if (m == "RE0to10m") {
     l = expression(WI["0-10m"])
-  }else if (m == "WIBelow10m") {
-    l = expression(WI["<10m"])
+  }else if (m == "REBelow10m") {
+    l = expression(RE["<10m"])
   }
   
   dataSubset = d %>% filter(metric == m & timeOrdered == "Pre-fire") %>% na.omit()
@@ -885,8 +900,8 @@ combined <- ggarrange(plotlist = plot_list,
 
 dev.new();print(combined)
 
-outFile <- paste0(indir,"/figures/forest_type_pre-fire_metrics_distributions_abgd",biomass,"Mghayr_elev",delta_elev,"m_dist",distance,"m_",version,".png")
-ggsave(outFile, width = 7, height = 7, units = "in", dpi=200)
+outFile <- paste0(indir,"/forest_type_pre-fire_metrics_distributions_abgd",biomass,"Mghayr_elev",delta_elev,"m_dist",distance,"m_",version,".png")
+ggsave(outFile, width = 7, height = 7, units = "in", dpi=600)
 
 
 ###########################################################################################################
@@ -896,6 +911,17 @@ ggsave(outFile, width = 7, height = 7, units = "in", dpi=200)
 # version date
 version <- "240822"
 
+# maximum time after fire limit (days)
+maxAfter <- 1500 # no limit
+#maxAfter <- 365 # 1 year
+
+# minimum time after fire limit (days)
+minAfter <- 0 # 0 years
+
+# maximum time before fire limit (days)
+maxBefore <- 730 # 2 years
+#maxBefore <- 365 # 1 year
+
 # elevation change limit
 delta_elev <- 10
 
@@ -904,13 +930,13 @@ biomass <- 99999
 
 # get regression results table
 predictors <- c("mtbs_dnbrOW", "topoSlope","timeAfter","prefireMetric","vpd","windSpeed","et")
-dfdNBR <- read.csv(paste0(indir,"/data/univariate_spatialreg_abgd",biomass,"Mghayr_elev",delta_elev,"m_dist",distance,"m_",predictors[1],"_zscore_maxBefore",maxBefore,"_minAfter",minAfter,"_maxAfter",maxAfter,"_",version,".csv"))
-dftopoSlope <- read.csv(paste0(indir,"/data/univariate_spatialreg_abgd",biomass,"Mghayr_elev",delta_elev,"m_dist",distance,"m_",predictors[2],"_zscore_maxBefore",maxBefore,"_minAfter",minAfter,"_maxAfter",maxAfter,"_",version,".csv"))
-dftimeAfter <- read.csv(paste0(indir,"/data/univariate_spatialreg_abgd",biomass,"Mghayr_elev",delta_elev,"m_dist",distance,"m_",predictors[3],"_zscore_maxBefore",maxBefore,"_minAfter",minAfter,"_maxAfter",maxAfter,"_",version,".csv"))
-dfpreMetric <- read.csv(paste0(indir,"/data/univariate_spatialreg_abgd",biomass,"Mghayr_elev",delta_elev,"m_dist",distance,"m_",predictors[4],"_zscore_maxBefore",maxBefore,"_minAfter",minAfter,"_maxAfter",maxAfter,"_",version,".csv"))
-dfvpd <- read.csv(paste0(indir,"/data/univariate_spatialreg_abgd",biomass,"Mghayr_elev",delta_elev,"m_dist",distance,"m_",predictors[5],"_zscore_maxBefore",maxBefore,"_minAfter",minAfter,"_maxAfter",maxAfter,"_",version,".csv"))
-dfwindSpeed <- read.csv(paste0(indir,"/data/univariate_spatialreg_abgd",biomass,"Mghayr_elev",delta_elev,"m_dist",distance,"m_",predictors[6],"_zscore_maxBefore",maxBefore,"_minAfter",minAfter,"_maxAfter",maxAfter,"_",version,".csv"))
-dfet <- read.csv(paste0(indir,"/data/univariate_spatialreg_abgd",biomass,"Mghayr_elev",delta_elev,"m_dist",distance,"m_",predictors[7],"_zscore_maxBefore",maxBefore,"_minAfter",minAfter,"_maxAfter",maxAfter,"_",version,".csv"))
+dfdNBR <- read.csv(paste0(indir,"/univariate_spatialreg_abgd",biomass,"Mghayr_elev",delta_elev,"m_dist",distance,"m_",predictors[1],"_zscore_maxBefore",maxBefore,"_minAfter",minAfter,"_maxAfter",maxAfter,"_",version,".csv"))
+dftopoSlope <- read.csv(paste0(indir,"/univariate_spatialreg_abgd",biomass,"Mghayr_elev",delta_elev,"m_dist",distance,"m_",predictors[2],"_zscore_maxBefore",maxBefore,"_minAfter",minAfter,"_maxAfter",maxAfter,"_",version,".csv"))
+dftimeAfter <- read.csv(paste0(indir,"/univariate_spatialreg_abgd",biomass,"Mghayr_elev",delta_elev,"m_dist",distance,"m_",predictors[3],"_zscore_maxBefore",maxBefore,"_minAfter",minAfter,"_maxAfter",maxAfter,"_",version,".csv"))
+dfpreMetric <- read.csv(paste0(indir,"/univariate_spatialreg_abgd",biomass,"Mghayr_elev",delta_elev,"m_dist",distance,"m_",predictors[4],"_zscore_maxBefore",maxBefore,"_minAfter",minAfter,"_maxAfter",maxAfter,"_",version,".csv"))
+dfvpd <- read.csv(paste0(indir,"/univariate_spatialreg_abgd",biomass,"Mghayr_elev",delta_elev,"m_dist",distance,"m_",predictors[5],"_zscore_maxBefore",maxBefore,"_minAfter",minAfter,"_maxAfter",maxAfter,"_",version,".csv"))
+dfwindSpeed <- read.csv(paste0(indir,"/univariate_spatialreg_abgd",biomass,"Mghayr_elev",delta_elev,"m_dist",distance,"m_",predictors[6],"_zscore_maxBefore",maxBefore,"_minAfter",minAfter,"_maxAfter",maxAfter,"_",version,".csv"))
+dfet <- read.csv(paste0(indir,"/univariate_spatialreg_abgd",biomass,"Mghayr_elev",delta_elev,"m_dist",distance,"m_",predictors[7],"_zscore_maxBefore",maxBefore,"_minAfter",minAfter,"_maxAfter",maxAfter,"_",version,".csv"))
                                            
 df <- rbind(dfdNBR,dftimeAfter,dftopoSlope,dfvpd,dfet,dfwindSpeed,dfpreMetric)
 
@@ -926,8 +952,7 @@ df2 <- df %>% select(ols_slope,spatial_slope,spatial_pvalslope,predictor,metricF
 df2$significant <- ifelse(df2$spatial_pvalslope <= 0.01,"Sig.","Not Sig.")
 df2$modelFactor <- factor(df2$predictor, 
                           levels = c("mtbs_dnbrOW","timeAfter","topoSlope","prefireMetric","et","vpd","windSpeed"),
-                          labels = c("dNBR","ElapsedTime","TopoSlope","Pre-fire Structure","ET","VPD","WS"))
-
+                          labels = c("Landsat burn severity (dNBR)","Elapsed Time","Topographic Slope","Pre-fire Structure","Evapotranspiration","Vapor Pressure Deficit","Wind Speed"))
 pal <- RColorBrewer::brewer.pal(8, "Set2")
 pal1 <- c(pal[1:3],pal[8],pal[4:5],pal[7])
 
@@ -942,7 +967,7 @@ plotSlope <- ggplot(df2,aes(x=spatial_slope,y=metricFactor,shape = significant,c
   labs(x = "Normalized slope") +
   guides(shape = "none") +
   scale_y_discrete(labels = c("RH98","RH75","RH50","RH25",
-                              expression(WI["<10m"]),expression(mPAI["0-10m"]),
+                              expression(RE["<10m"]),expression(mPAI["0-10m"]),
                               "tPAI","tAGBD","Cover","aVDR","nmode","FHD")) +
   theme(axis.text.x = element_text(size = 10),
         axis.text.y = element_text(size = 10),
@@ -961,7 +986,7 @@ plotSlope <- ggplot(df2,aes(x=spatial_slope,y=metricFactor,shape = significant,c
 df3 <- df %>% select(ols_r2,spatial_psuedo_r2,predictor,metricFactor)
 df3$modelFactor <- factor(df3$predictor, 
                           levels = c("mtbs_dnbrOW","timeAfter","topoSlope","prefireMetric","et","vpd","windSpeed"),
-                          labels = c("dNBR","ElapsedTime","TopoSlope","Pre-fire Structure","ET","VPD","WS"))
+                          labels = c("Landsat burn severity (dNBR)","Elapsed Time","Topographic Slope","Pre-fire Structure","Evapotranspiration","Vapor Pressure Deficit","Wind Speed"))
 plotR2 <- ggplot(df3,aes(x=metricFactor,y=spatial_psuedo_r2,fill = modelFactor)) +
   geom_bar(stat="identity",position=position_dodge()) +
   theme_bw() +
@@ -969,7 +994,7 @@ plotR2 <- ggplot(df3,aes(x=metricFactor,y=spatial_psuedo_r2,fill = modelFactor))
   scale_fill_manual(values=pal1) +
   ylab(expression("Pseudo r "^2)) +
   scale_x_discrete(labels = c("FHD","nmode","aVDR","Cover","tAGBD","tPAI",
-                              expression(mPAI["0-10m"]),expression(WI["<10m"]),
+                              expression(mPAI["0-10m"]),expression(RE["<10m"]),
                               "RH25","RH50","RH75","RH98")) +
   theme(axis.text.x = element_text(size = 10,angle=45,hjust=1),
         axis.text.y = element_text(size = 10),
@@ -992,10 +1017,10 @@ combined <- ggarrange(plotR2,plotSlope,
 
 dev.new();print(combined)
 
-outFile <- paste0(indir,"/figures/regression_models_univariate_r2_slopes_zscore_abgd",biomass,"Mghayr_elev",delta_elev,"m_dist",distance,"m_maxBefore",maxBefore,"_minAfter",minAfter,"_maxAfter",maxAfter,"_",version,".png")
-ggsave(outFile, width = 8, height = 5, units = "in", dpi=200)
+outFile <- paste0(indir,"/regression_models_univariate_r2_slopes_zscore_abgd",biomass,"Mghayr_elev",delta_elev,"m_dist",distance,"m_maxBefore",maxBefore,"_minAfter",minAfter,"_maxAfter",maxAfter,"_",version,".png")
+ggsave(outFile, width = 8, height = 5, units = "in", dpi=600)
 
-outFile <- paste0(indir,"/data/regression_models_univariate_statistics_zscore_abgd",biomass,"Mghayr_elev",delta_elev,"m_dist",distance,"m_maxBefore",maxBefore,"_minAfter",minAfter,"_maxAfter",maxAfter,"_",version,".csv")
+outFile <- paste0(indir,"/regression_models_univariate_statistics_zscore_abgd",biomass,"Mghayr_elev",delta_elev,"m_dist",distance,"m_maxBefore",maxBefore,"_minAfter",minAfter,"_maxAfter",maxAfter,"_",version,".csv")
 write.csv(df,outFile, row.names = F)
 
 ###############################################################################
@@ -1005,8 +1030,17 @@ write.csv(df,outFile, row.names = F)
 # version date
 version <- "240822"
 
+# maximum time after fire limit (days)
+maxAfter <- 1500 # no limit
+
+# minimum time after fire limit (days)
+minAfter <- 0 # 0 years
+
+# maximum time before fire limit (days)
+maxBefore <- 730 # 2 years
+
 # get regression results table
-df <- read.csv(paste0(indir,"/data/master_gedi_fire_difference_spatialreg_interactions_mtbs_dnbrOW_zscore_abgd",biomass,"Mghayr_elev",delta_elev,"m_dist",distance,"m_maxBefore730_minAfter0_maxAfter1500_",version,".csv"))
+df <- read.csv(paste0(indir,"/master_gedi_fire_difference_spatialreg_interactions_mtbs_dnbrOW_zscore_abgd",biomass,"Mghayr_elev",delta_elev,"m_dist",distance,"m_maxBefore",maxBefore,"_minAfter",minAfter,"_maxAfter",maxAfter,"_",version,".csv"))
 df <- df %>% filter(response %in% paste0("delta_",metrics$metric))
 
 df$metricFactor <- factor(df$response, 
@@ -1043,7 +1077,7 @@ plotForestSlope <- ggplot(df_stacked,aes(x=slope,y=response,shape = significant,
   scale_shape_manual(values = c(1, 16)) +
   scale_x_continuous(labels = scales::number_format(accuracy = 0.1),breaks = pretty_breaks(n = 4)) +
   scale_y_discrete(labels = c("RH98","RH75","RH50","RH25",
-                              expression(WI["<10m"]),expression(mPAI["0-10m"]),
+                              expression(RE["<10m"]),expression(mPAI["0-10m"]),
                               "tPAI","tAGBD","Cover","aVDR","nmode","FHD")) +
   labs(x = expression("Normalized effect on " * Delta * " Structure"),
        title = "dNBR") +
@@ -1087,7 +1121,7 @@ plotBeamSlope <- ggplot(df_stacked,aes(x=slope,y=response,shape = significant,co
   scale_shape_manual(values = c(1, 16)) +
   scale_x_continuous(labels = scales::number_format(accuracy = 0.1),breaks = pretty_breaks(n = 4)) +
   scale_y_discrete(labels = c("RH98","RH75","RH50","RH25",
-                              expression(WI["<10m"]),expression(mPAI["0-10m"]),
+                              expression(RE["<10m"]),expression(mPAI["0-10m"]),
                               "tPAI","tAGBD","Cover","aVDR","nmode","FHD")) +
   labs(x = expression("Normalized effect on " * Delta * " Structure"),
        title = "dNBR") +
@@ -1133,7 +1167,7 @@ plotPrefireForestSlope <- ggplot(df_stacked,aes(x=slope,y=response,shape = signi
   scale_shape_manual(values = c(1, 16)) +
   scale_x_continuous(labels = scales::number_format(accuracy = 0.1),breaks = pretty_breaks(n = 4)) +
   scale_y_discrete(labels = c("RH98","RH75","RH50","RH25",
-                              expression(WI["<10m"]),expression(mPAI["0-10m"]),
+                              expression(RE["<10m"]),expression(mPAI["0-10m"]),
                               "tPAI","tAGBD","Cover","aVDR","nmode","FHD")) +
   labs(x = expression("Normalized effect on " * Delta * " Structure"),
        title = "Pre-fire Structure") +
@@ -1178,7 +1212,7 @@ plotPrefireBeamSlope <- ggplot(df_stacked,aes(x=slope,y=response,shape = signifi
   scale_shape_manual(values = c(1, 16)) +
   scale_x_continuous(labels = scales::number_format(accuracy = 0.1),breaks = pretty_breaks(n = 4)) +
   scale_y_discrete(labels = c("RH98","RH75","RH50","RH25",
-                              expression(WI["<10m"]),expression(mPAI["0-10m"]),
+                              expression(RE["<10m"]),expression(mPAI["0-10m"]),
                               "tPAI","tAGBD","Cover","aVDR","nmode","FHD")) +
   labs(x = expression("Normalized effect on " * Delta * " Structure"),
        title = "Pre-fire Structure") +
@@ -1206,8 +1240,8 @@ combined1 <- ggarrange(plotPrefireForestSlope,plotForestSlope,
 
 dev.new();print(combined1)
 
-outFile <- paste0(indir,"/figures/regression_models_dNBR_prefireMetric_forest_slopes_",distance,"m_",version,".png")
-ggsave(outFile, width = 6, height = 4, units = "in", dpi=200)
+outFile <- paste0(indir,"/regression_models_dNBR_prefireMetric_forest_slopes_",distance,"m_maxBefore",maxBefore,"_minAfter",minAfter,"_maxAfter",maxAfter,"_",version,".png")
+ggsave(outFile, width = 6, height = 4, units = "in", dpi=600)
 
 # combine beam type and toposlope plots into final figure
 combined2 <- ggarrange(plotPrefireBeamSlope, plotBeamSlope,
@@ -1219,8 +1253,8 @@ combined2 <- ggarrange(plotPrefireBeamSlope, plotBeamSlope,
 
 dev.new();print(combined2)
 
-outFile <- paste0(indir,"/figures/regression_models_dNBR_prefireMetric_beam_slopes_",distance,"m_",version,".png")
-ggsave(outFile, width = 6, height = 4, units = "in", dpi=200)
+outFile <- paste0(indir,"/regression_models_dNBR_prefireMetric_beam_slopes_",distance,"m_maxBefore",maxBefore,"_minAfter",minAfter,"_maxAfter",maxAfter,"_",version,".png")
+ggsave(outFile, width = 6, height = 4, units = "in", dpi=600)
 
 ###############################################################################
 ### Plot of spatial regression plot slopes for dNBR * Prefire Metrics
@@ -1228,9 +1262,21 @@ ggsave(outFile, width = 6, height = 4, units = "in", dpi=200)
 
 # version date
 version <- "240822"
+#version <- "241225"
+
+# maximum time after fire limit (days)
+maxAfter <- 1500 # no limit
+#maxAfter <- 365 # 1 year
+
+# minimum time after fire limit (days)
+minAfter <- 0 # 0 years
+
+# maximum time before fire limit (days)
+maxBefore <- 730 # 2 years
+#maxBefore <- 365 # 1 year
 
 # get regression results table
-df <- read.csv(paste0(indir,"/data/master_gedi_fire_difference_spatialreg_interactions_mtbs_dnbrOW_zscore_abgd",biomass,"Mghayr_elev",delta_elev,"m_dist",distance,"m_maxBefore730_minAfter0_maxAfter1500_",version,".csv"))
+df <- read.csv(paste0(indir,"/master_gedi_fire_difference_spatialreg_interactions_mtbs_dnbrOW_zscore_abgd",biomass,"Mghayr_elev",delta_elev,"m_dist",distance,"m_maxBefore",maxBefore,"_minAfter",minAfter,"_maxAfter",maxAfter,"_",version,".csv"))
 df <- df %>% filter(response %in% paste0("delta_",metrics$metric))
 
 df$metricFactor <- factor(df$response, 
@@ -1270,7 +1316,7 @@ plotdNBRPreFireSlope <- ggplot(df_stacked,aes(x=slope,y=response,shape = signifi
   guides(shape = "none") +
   scale_x_continuous(labels = scales::number_format(accuracy = 0.1),breaks = pretty_breaks(n = 5)) +
   scale_y_discrete(labels = c("RH98","RH75","RH50","RH25",
-                              expression(WI["<10m"]),expression(mPAI["0-10m"]),
+                              expression(RE["<10m"]),expression(mPAI["0-10m"]),
                               "tPAI","tAGBD","Cover","aVDR","nmode","FHD")) +
   theme(axis.text.x = element_text(size = 10),
         axis.text.y = element_text(size = 10),
@@ -1284,8 +1330,8 @@ plotdNBRPreFireSlope <- ggplot(df_stacked,aes(x=slope,y=response,shape = signifi
 
 dev.new();print(plotdNBRPreFireSlope)
 
-outFile <- paste0(indir,"/figures/regression_models_dNBR_prefireMetric_interaction_zscore_slopes_",distance,"m_",version,".png")
-ggsave(outFile, width = 5, height = 4, units = "in", dpi=200)
+outFile <- paste0(indir,"/regression_models_dNBR_prefireMetric_interaction_zscore_slopes_",distance,"m_maxBefore",maxBefore,"_minAfter",minAfter,"_maxAfter",maxAfter,"_",version,".png")
+ggsave(outFile, width = 5, height = 4, units = "in", dpi=600)
 
 ###############################################################################
 ### Plot of sample size for regression analysis
@@ -1294,16 +1340,27 @@ ggsave(outFile, width = 5, height = 4, units = "in", dpi=200)
 # version date
 version <- "240822"
 
+# maximum time after fire limit (days)
+maxAfter <- 1500 # no limit
+#maxAfter <- 365 # 1 year
+
+# minimum time after fire limit (days)
+minAfter <- 0 # 0 years
+
+# maximum time before fire limit (days)
+maxBefore <- 730 # 2 years
+#maxBefore <- 365 # 1 year
+
 # get regression results table
 
 predictors <- c("mtbs_dnbrOW", "topoSlope","timeAfter","prefireMetric","vpd","windSpeed","et")
-dfdNBR <- read.csv(paste0(indir,"/data/univariate_spatialreg_abgd",biomass,"Mghayr_elev",delta_elev,"m_dist",distance,"m_",predictors[1],"_zscore_maxBefore",maxBefore,"_minAfter",minAfter,"_maxAfter",maxAfter,"_",version,".csv"))
-dftopoSlope <- read.csv(paste0(indir,"/data/univariate_spatialreg_abgd",biomass,"Mghayr_elev",delta_elev,"m_dist",distance,"m_",predictors[2],"_zscore_maxBefore",maxBefore,"_minAfter",minAfter,"_maxAfter",maxAfter,"_",version,".csv"))
-dftimeAfter <- read.csv(paste0(indir,"/data/univariate_spatialreg_abgd",biomass,"Mghayr_elev",delta_elev,"m_dist",distance,"m_",predictors[3],"_zscore_maxBefore",maxBefore,"_minAfter",minAfter,"_maxAfter",maxAfter,"_",version,".csv"))
-dfpreMetric <- read.csv(paste0(indir,"/data/univariate_spatialreg_abgd",biomass,"Mghayr_elev",delta_elev,"m_dist",distance,"m_",predictors[4],"_zscore_maxBefore",maxBefore,"_minAfter",minAfter,"_maxAfter",maxAfter,"_",version,".csv"))
-dfvpd <- read.csv(paste0(indir,"/data/univariate_spatialreg_abgd",biomass,"Mghayr_elev",delta_elev,"m_dist",distance,"m_",predictors[5],"_zscore_maxBefore",maxBefore,"_minAfter",minAfter,"_maxAfter",maxAfter,"_",version,".csv"))
-dfwindSpeed <- read.csv(paste0(indir,"/data/univariate_spatialreg_abgd",biomass,"Mghayr_elev",delta_elev,"m_dist",distance,"m_",predictors[6],"_zscore_maxBefore",maxBefore,"_minAfter",minAfter,"_maxAfter",maxAfter,"_",version,".csv"))
-dfet <- read.csv(paste0(indir,"/data/univariate_spatialreg_abgd",biomass,"Mghayr_elev",delta_elev,"m_dist",distance,"m_",predictors[7],"_zscore_maxBefore",maxBefore,"_minAfter",minAfter,"_maxAfter",maxAfter,"_",version,".csv"))
+dfdNBR <- read.csv(paste0(indir,"/univariate_spatialreg_abgd",biomass,"Mghayr_elev",delta_elev,"m_dist",distance,"m_",predictors[1],"_zscore_maxBefore",maxBefore,"_minAfter",minAfter,"_maxAfter",maxAfter,"_",version,".csv"))
+dftopoSlope <- read.csv(paste0(indir,"/univariate_spatialreg_abgd",biomass,"Mghayr_elev",delta_elev,"m_dist",distance,"m_",predictors[2],"_zscore_maxBefore",maxBefore,"_minAfter",minAfter,"_maxAfter",maxAfter,"_",version,".csv"))
+dftimeAfter <- read.csv(paste0(indir,"/univariate_spatialreg_abgd",biomass,"Mghayr_elev",delta_elev,"m_dist",distance,"m_",predictors[3],"_zscore_maxBefore",maxBefore,"_minAfter",minAfter,"_maxAfter",maxAfter,"_",version,".csv"))
+dfpreMetric <- read.csv(paste0(indir,"/univariate_spatialreg_abgd",biomass,"Mghayr_elev",delta_elev,"m_dist",distance,"m_",predictors[4],"_zscore_maxBefore",maxBefore,"_minAfter",minAfter,"_maxAfter",maxAfter,"_",version,".csv"))
+dfvpd <- read.csv(paste0(indir,"/univariate_spatialreg_abgd",biomass,"Mghayr_elev",delta_elev,"m_dist",distance,"m_",predictors[5],"_zscore_maxBefore",maxBefore,"_minAfter",minAfter,"_maxAfter",maxAfter,"_",version,".csv"))
+dfwindSpeed <- read.csv(paste0(indir,"/univariate_spatialreg_abgd",biomass,"Mghayr_elev",delta_elev,"m_dist",distance,"m_",predictors[6],"_zscore_maxBefore",maxBefore,"_minAfter",minAfter,"_maxAfter",maxAfter,"_",version,".csv"))
+dfet <- read.csv(paste0(indir,"/univariate_spatialreg_abgd",biomass,"Mghayr_elev",delta_elev,"m_dist",distance,"m_",predictors[7],"_zscore_maxBefore",maxBefore,"_minAfter",minAfter,"_maxAfter",maxAfter,"_",version,".csv"))
 
 df <- rbind(dfdNBR,dftimeAfter,dftopoSlope,dfvpd,dfet,dfwindSpeed,dfpreMetric)
 df <- df %>% filter(response %in% paste0("delta_",metrics$metric))
@@ -1315,7 +1372,7 @@ df$metricFactor <- factor(df$response,
 
 df$predictorFactor <- factor(df$predictor, 
                              levels = c("mtbs_dnbrOW","timeAfter","topoSlope","prefireMetric","et","vpd","windSpeed"),
-                             labels = c("dNBR","ElapsedTime","TopoSlope","Pre-fire Structure","ET","VPD","WS"))
+                             labels = c("dNBR","Elapsed Time","Topographic Slope","Pre-fire Structure","Evapotranspiration","Vapor Pressure Deficit","Wind Speed"))
 df10 <- df %>% select(n,metricFactor)
 df10_stacked <- stack(df10,select = -metricFactor) %>% rename(n = values)
 df10_stacked$response <- df10$metricFactor
@@ -1328,7 +1385,7 @@ plotSampleSize <- ggplot(df10_stacked,aes(x=response,y=n)) +
   ylab("Count") +
   coord_cartesian(ylim = c(32000, 34000)) +
   scale_x_discrete(labels = c("FHD","nmode","aVDR","Cover","tAGBD","tPAI",
-                              expression(mPAI["0-10m"]),expression(WI["<10m"]),
+                              expression(mPAI["0-10m"]),expression(RE["<10m"]),
                               "RH25","RH50","RH75","RH98")) +
   theme(axis.text.x = element_text(size = 10,angle=90,hjust=1),
         axis.text.y = element_text(size = 10),
@@ -1341,8 +1398,8 @@ plotSampleSize <- ggplot(df10_stacked,aes(x=response,y=n)) +
   ) 
 
 dev.new();print(plotSampleSize)
-outFile <- paste0(indir,"/figures/regression_models_sample_size_",distance,"m_",version,".png")
-ggsave(outFile, width = 6, height = 5, units = "in", dpi=200)
+outFile <- paste0(indir,"/regression_models_sample_size_",distance,"m_",version,".png")
+ggsave(outFile, width = 6, height = 5, units = "in", dpi=600)
 
 ###############################################################################
 ### Plot of sample size for ANOVA analysis
@@ -1351,13 +1408,13 @@ ggsave(outFile, width = 6, height = 5, units = "in", dpi=200)
 # version date
 version <- "240822"
 
-df <- read.csv(paste0(indir,"/data/nlme_repeated_anova_spatial_zscore_abgd",biomass,"Mghayr_elev",delta_elev,"m_dist",distance,"m_maxBefore730_minAfter0_maxAfter365_",version,".csv"))
+df <- read.csv(paste0(indir,"/nlme_repeated_anova_spatial_zscore_abgd",biomass,"Mghayr_elev",delta_elev,"m_dist",distance,"m_maxBefore730_minAfter0_maxAfter365_",version,".csv"))
 df11 <- df %>% select(n,metric) %>% mutate(time = "<1 year") %>% filter(metric %in% metrics$metric)
-df <- read.csv(paste0(indir,"/data/nlme_repeated_anova_spatial_zscore_abgd",biomass,"Mghayr_elev",delta_elev,"m_dist",distance,"m_maxBefore730_minAfter365_maxAfter730_",version,".csv"))
+df <- read.csv(paste0(indir,"/nlme_repeated_anova_spatial_zscore_abgd",biomass,"Mghayr_elev",delta_elev,"m_dist",distance,"m_maxBefore730_minAfter365_maxAfter730_",version,".csv"))
 df12 <- df %>% select(n,metric) %>% mutate(time = "1-2 years") %>% filter(metric %in% metrics$metric)
-df <- read.csv(paste0(indir,"/data/nlme_repeated_anova_spatial_zscore_abgd",biomass,"Mghayr_elev",delta_elev,"m_dist",distance,"m_maxBefore730_minAfter730_maxAfter1500_",version,".csv"))
+df <- read.csv(paste0(indir,"/nlme_repeated_anova_spatial_zscore_abgd",biomass,"Mghayr_elev",delta_elev,"m_dist",distance,"m_maxBefore730_minAfter730_maxAfter1500_",version,".csv"))
 df13 <- df %>% select(n,metric) %>% mutate(time = "2-3 years") %>% filter(metric %in% metrics$metric)
-df <- read.csv(paste0(indir,"/data/nlme_repeated_anova_spatial_zscore_abgd",biomass,"Mghayr_elev",delta_elev,"m_dist",distance,"m_maxBefore730_minAfter0_maxAfter1500_",version,".csv"))
+df <- read.csv(paste0(indir,"/nlme_repeated_anova_spatial_zscore_abgd",biomass,"Mghayr_elev",delta_elev,"m_dist",distance,"m_maxBefore730_minAfter0_maxAfter1500_",version,".csv"))
 df14 <- df %>% select(n,metric) %>% mutate(time = "All years") %>% filter(metric %in% metrics$metric)
 
 df15 <- rbind(df11,df12,df13,df14)
@@ -1377,7 +1434,7 @@ plotSampleSizeAnova <- ggplot(df15,aes(x=metricFactor,y=n, fill = time)) +
   scale_fill_manual(values=pal) +
   scale_y_continuous(labels = scales::number_format(accuracy = 1),breaks = pretty_breaks(n = 5)) +
   scale_x_discrete(labels = c("FHD","nmode","aVDR","Cover","tAGBD","tPAI",
-                              expression(mPAI["0-10m"]),expression(WI["<10m"]),
+                              expression(mPAI["0-10m"]),expression(RE["<10m"]),
                               "RH25","RH50","RH75","RH98")) +
   theme(axis.text.x = element_text(size = 10,angle=45,hjust=1),
         axis.text.y = element_text(size = 10),
@@ -1390,8 +1447,8 @@ plotSampleSizeAnova <- ggplot(df15,aes(x=metricFactor,y=n, fill = time)) +
   ) 
 
 dev.new();print(plotSampleSizeAnova)
-outFile <- paste0(indir,"/figures/anova_sample_size_",distance,"m_",version,".png")
-ggsave(outFile, width = 6, height = 3, units = "in", dpi=200)
+outFile <- paste0(indir,"/anova_sample_size_",distance,"m_",version,".png")
+ggsave(outFile, width = 6, height = 3, units = "in", dpi=600)
 
 ###############################################################################
 ### Plot footprints per fire
@@ -1406,15 +1463,21 @@ minAfter <- 0 # 0 years
 # maximum time before fire limit (days)
 maxBefore <- 730 # 2 years
 
-file <- paste0(indir,"/data/master_gedi_fire_difference_",distance,"m_240822.csv")
+file <- paste0(indir,"/master_gedi_fire_difference_",distance,"m_240822.csv")
 df <- read.csv(file)
 
-data <- df %>% filter(timeBefore <= maxBefore & timeAfter >= minAfter & timeAfter <= maxAfter & !is.na(mtbs_dnbrOW)) %>%
-        select(fire, region)
+# calculate biomass growth limit based on time difference
+df$abgd_limit <- (df$timeDiff/365) * biomass
+
+data <- df %>% filter(timeBefore <= maxBefore & timeAfter >= minAfter & timeAfter <= maxAfter &
+                        !is.na(mtbs_dnbrOW) &  
+                        abs(delta_GEDI_elev) <= delta_elev &
+                        delta_strct_tAGBD <= abgd_limit) %>%
+                select(fire, region)
 
 fireCount <- data %>% group_by(fire) %>% summarize(count = n())
 
-file <- paste0(indir,"/data/fire_data_renamed.csv")
+file <- paste0(indir,"/fire_data_renamed.csv")
 fireLookup <- read.csv(file) %>% rename(fire = fireName)
 
 fireCount <- left_join(fireCount,fireLookup, by="fire")
@@ -1437,14 +1500,14 @@ plotSampleSizeFires <- ggplot(fireCount,aes(x=name,y=count, fill = region)) +
   ) 
 
 dev.new();print(plotSampleSizeFires)
-outFile <- paste0(indir,"/figures/fire_sample_size_",distance,"m_240809.png")
-ggsave(outFile, width = 6, height = 3, units = "in", dpi=200)
+outFile <- paste0(indir,"/fire_sample_size_",distance,"m_",version,".png")
+ggsave(outFile, width = 6, height = 3, units = "in", dpi=600)
 
-outFile <- paste0(indir,"/data/fire_sample_size_",distance,"m_240809.csv")
+outFile <- paste0(indir,"/fire_sample_size_",distance,"m_",version,".csv")
 write.csv(fireCount, outFile, row.names = F)
 
 ###################################################################################
-## Plot of Change in tAGBD vs Change in Intensity10m metrics, colored by dNBR
+## Plot of Change in tAGBD vs Change in RE10m metrics, colored by dNBR
 ###################################################################################
 
 # version date
@@ -1453,7 +1516,7 @@ version <- "240822"
 library(viridis)
 
 # read change metrics file
-file <- paste0(indir,"/data/master_gedi_fire_difference_",distance,"m_",version,".csv")
+file <- paste0(indir,"/master_gedi_fire_difference_",distance,"m_",version,".csv")
 df <- read.csv(file)
 
 # get wildfire burn severity classes
@@ -1489,7 +1552,7 @@ data$FireSeverityOrdered <- factor(data$FireSeveritydNBRMillerThode, levels = c(
 data$typeForestOrdered <- factor(data$typeForest, levels = c("conifer","hardwood","mixed"), labels = c("Conifer","Hardwood","Mixed"))
 
 # GEDI metrics to use
-metricList <- read.csv(paste0(indir,"/data/gedi_structure_variables_reduced_pai_240927.csv"))  %>% filter(selected == "Y")
+metricList <- read.csv(paste0(indir,"/gedi_structure_variables_reduced_pai_240927.csv"))  %>% filter(selected == "Y")
 metrics <- left_join(metricList, metricLookup, by="metric") %>% select(metric, labels)
 
 # select only data from fires
@@ -1522,10 +1585,10 @@ plot9 <- ggplot(d18,aes(x=x,y=y)) +
   coord_cartesian(xlim = c(0, 800), ylim = c(0,100)) +
   labs(
     x = "Pre-fire tAGBD",
-    y =  expression("Pre-fire WI"["<10m"]),
+    y =  expression("Pre-fire RE"["<10m"]),
     fill = c) +
   scale_fill_distiller(palette="RdYlGn", direction= 1, guide = guide_colorbar(
-    title = expression("Decrease    " * Delta * " WI"["<10m"] * "    Increase"),
+    title = expression("Decrease    " * Delta * " RE"["<10m"] * "    Increase"),
     title.position = "top", 
     title.hjust = 0.5,
     label = TRUE,
@@ -1534,7 +1597,7 @@ plot9 <- ggplot(d18,aes(x=x,y=y)) +
   )) +
   geom_smooth(method = "lm",formula = "y~x", color = "black", size = 0.5) + 
   annotate("text", x = 500, y = 90,
-           label = paste("r² =", round(r_squared, 2)),
+           label = paste("r? =", round(r_squared, 2)),
            hjust = 0, vjust = 0, size = 4, color = "black") 
 
 
@@ -1558,7 +1621,7 @@ plot10 <- ggplot(d18,aes(x=x,y=y)) +
   coord_cartesian(xlim = c(-600,600), ylim = c(-100,100)) +
   labs(
     x = expression(Delta * " tAGBD"),
-    y = expression(Delta * " WI"["<10m"]),
+    y = expression(Delta * " RE"["<10m"]),
     fill = x) +
   scale_fill_distiller(palette = "RdYlGn", guide = guide_colorbar(
     title = "Low        Avg dNBR        High",  
@@ -1570,7 +1633,7 @@ plot10 <- ggplot(d18,aes(x=x,y=y)) +
   )) +
   geom_smooth(method = "lm",formula = "y~x", color = "black", size = 0.5) + 
   annotate("text", x = 150, y = 80,
-           label = paste("r² =", round(r_squared, 2)),
+           label = paste("r? =", round(r_squared, 2)),
            hjust = 0, vjust = 0, size = 4, color = "black") 
 
 
@@ -1584,8 +1647,8 @@ arrange <- ggarrange(plot9, plot10,
 
 dev.new();print(arrange)
 
-outFile <- paste0(indir,"/figures/intensity_graphs_",distance,"m_",version,".png")
-ggsave(outFile, width = 7, height = 6, units = "in", dpi=200)
+outFile <- paste0(indir,"/intensity_graphs_",distance,"m_",version,".png")
+ggsave(outFile, width = 7, height = 6, units = "in", dpi=600)
 
 ###################################################################################
 ## Histogram of distances between pairs
@@ -1601,8 +1664,8 @@ histogramDistance <- ggplot(data, aes(x = distance)) +
   geom_vline(aes(xintercept = meanDistance), color = "black", linetype = "dashed", size = 1) 
 
 dev.new();print(histogramDistance)
-outFile <- paste0(indir,"/figures/pair_distance_histogram_",distance,"m_",version,".png")
-ggsave(outFile, width = 6, height = 6, units = "in", dpi=200)
+outFile <- paste0(indir,"/pair_distance_histogram_",distance,"m_",version,".png")
+ggsave(outFile, width = 6, height = 6, units = "in", dpi=600)
 
 ############ 3D Plot ################
 library(plotly)
@@ -1659,7 +1722,7 @@ cn <- recode(cn, !!!setNames(metricLookup$labels, metricLookup$metric))
 colnames(d19) <- c("Pair distance","Time Since Fire","dNBR",cn)
 
 d19 <- d19 %>% select(c("FHD","nmode","aVDR","Cover","tAGBD","tPAI",
-                          "mPAI0to10","WIBelow10m",
+                          "mPAI0to10","REBelow10m",
                           "RH25","RH50","RH75","RH98","dNBR","Pair distance","Time Since Fire"))
                             
 # Calculate the correlation matrix
@@ -1680,10 +1743,10 @@ plot12 <- ggplot(data = melted_corr_matrix, aes(x = Var1, y = Var2, fill = value
         axis.text.y = element_text(size = 10)) +
   coord_fixed() +
   scale_x_discrete(labels = c("FHD","nmode","aVDR","Cover","tAGBD","tPAI",
-                              expression(mPAI["0-10m"]),expression(WI["<10m"]),
+                              expression(mPAI["0-10m"]),expression(RE["<10m"]),
                               "RH25","RH50","RH75","RH98","dNBR","Pair distance","Time Since Fire")) +
   scale_y_discrete(labels = c("FHD","nmode","aVDR","Cover","tAGBD","tPAI",
-                              expression(mPAI["0-10m"]),expression(WI["<10m"]),
+                              expression(mPAI["0-10m"]),expression(RE["<10m"]),
                               "RH25","RH50","RH75","RH98","dNBR","Pair distance","Time Since Fire")) +
   labs(title = "Correlation of Change in Structural Metrics",
        x = "",
@@ -1691,8 +1754,8 @@ plot12 <- ggplot(data = melted_corr_matrix, aes(x = Var1, y = Var2, fill = value
   geom_text(aes(label = round(value, 2)), color = "black", size = 2)
   
 dev.new();print(plot12)
-outFile <- paste0(indir,"/figures/correlation_graph_change_",distance,"m_",version,".png")
-ggsave(outFile, width = 6, height = 6, units = "in", dpi=200,bg = "transparent")
+outFile <- paste0(indir,"/correlation_graph_change_",distance,"m_",version,".png")
+ggsave(outFile, width = 6, height = 6, units = "in", dpi=600,bg = "transparent")
 
 ##### correlation pre-fire & post-fire metrics #####
 
@@ -1709,11 +1772,11 @@ colnames(d24) <- cn
 d25 <- rbind(d23,d24)
 
 d25 <- d25 %>% select(c("FHD","nmode","aVDR","Cover","tAGBD","tPAI",
-                        "mPAI0to10","WIBelow10m",
+                        "mPAI0to10","REBelow10m",
                         "RH25","RH50","RH75","RH98"))
 
 labels = c("FHD","nmode","aVDR","Cover","tAGBD","tPAI",expression(mPAI["<10m"]),
-           expression(WI["<10m"]),"RH25","RH50","RH75","RH98")
+           expression(RE["<10m"]),"RH25","RH50","RH75","RH98")
 
 # Calculate the correlation matrix
 corr_matrix <- cor(d25)
@@ -1733,10 +1796,10 @@ plot13 <- ggplot(data = melted_corr_matrix, aes(x = Var1, y = Var2, fill = value
         axis.text.y = element_text(size = 10)) +
   coord_fixed() +
   scale_x_discrete(labels = c("FHD","nmode","aVDR","Cover","tAGBD","tPAI",
-                              expression(mPAI["0-10m"]),expression(WI["<10m"]),
+                              expression(mPAI["0-10m"]),expression(RE["<10m"]),
                               "RH25","RH50","RH75","RH98")) +
   scale_y_discrete(labels = c("FHD","nmode","aVDR","Cover","tAGBD","tPAI",
-                              expression(mPAI["0-10m"]),expression(WI["<10m"]),
+                              expression(mPAI["0-10m"]),expression(RE["<10m"]),
                               "RH25","RH50","RH75","RH98")) +
   labs(title = "Correlation of all Structural Metrics (Pre- and Post-fire)",
        x = "",
@@ -1744,6 +1807,7 @@ plot13 <- ggplot(data = melted_corr_matrix, aes(x = Var1, y = Var2, fill = value
   geom_text(aes(label = round(value, 2)), color = "black", size = 2)
 
 dev.new();print(plot13)
-outFile <- paste0(indir,"/figures/correlation_graph_pre-post_",distance,"m_",version,".png")
-ggsave(outFile, width = 6, height = 6, units = "in", dpi=200,bg = "transparent")
+outFile <- paste0(indir,"/correlation_graph_pre-post_",distance,"m_",version,".png")
+ggsave(outFile, width = 6, height = 6, units = "in", dpi=600,bg = "transparent")
+
 

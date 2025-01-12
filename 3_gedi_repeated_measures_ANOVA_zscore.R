@@ -45,15 +45,15 @@ biomass <- 99999 # not used
 version <- "240822"
 
 #inDir <- "E:/active/project/calfire_gedi/rq2_paper"
-inDir <- "G:/Shared drives/CALFIRE_GEDI/Manuscripts/RQ2_wildfire_change_in_footprint_metrics"
+inDir <- "/GEDI_wildfire_structural_change"
 
 # GEDI metrics
-metrics <- read.csv(paste0(inDir,"/data/gedi_structure_variables_reduced_pai_240809.csv"))
+metrics <- read.csv(paste0(inDir,"/gedi_structure_variables_reduced_pai_240809.csv"))
 metrics <- metrics %>% filter(selected == "Y")
 
-inputFile <- paste0(inDir,"/data/master_gedi_fire_difference_",distance,"m_240818.csv")
+inputFile <- paste0(inDir,"/master_gedi_fire_difference_",distance,"m_240818.csv")
 
-outputFile <- paste0(inDir,"/data/nlme_repeated_anova_spatial_zscore_abgd",biomass,"Mghayr_elev",delta_elev,"m_dist",distance,"m_maxBefore",maxBefore,"_minAfter",minAfter,"_maxAfter",maxAfter,"_",version,".csv")
+outputFile <- paste0(inDir,"/nlme_repeated_anova_spatial_zscore_abgd",biomass,"Mghayr_elev",delta_elev,"m_dist",distance,"m_maxBefore",maxBefore,"_minAfter",minAfter,"_maxAfter",maxAfter,"_",version,".csv")
 
 # read in data
 df <- read.csv(inputFile) 

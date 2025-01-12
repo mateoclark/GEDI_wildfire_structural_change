@@ -11,7 +11,7 @@ library(sf)
 library(lubridate)
 
 # input directory
-inDir <- "E:/active/project/calfire_gedi/rq2_paper"
+inDir <- "/GEDI_wildfire_structural_change"
 
 # search distance to find matched points
 searchDistance <- 45 # meters
@@ -23,16 +23,16 @@ analysisMonths <- c(5:10) # May through October
 numShots <- 50
 
 # input master .csv file with GEDI and fire information
-inputFile <- paste0(inDir,"/data/master_gedi_fire_data_240809.csv")
+inputFile <- paste0(inDir,"/master_gedi_fire_data_240809.csv")
 
 # output .csv file with GEDI metric differences by fire
-outputFile <- paste0(inDir,"/data/master_gedi_fire_difference_45m_240818.csv")
+outputFile <- paste0(inDir,"/master_gedi_fire_difference_45m_240818.csv")
 
 # input .csv file with fire information
-fireFile <- paste0(inDir,"/data/fire_data.csv")
+fireFile <- paste0(inDir,"/fire_data.csv")
 
-# fire weather auxiliary data
-auxFile <- paste0(inDir,"/data/fire_csvs/2024_3_28/4_t_w.csv")
+# fire weather auxiliary data (Zipped in GitHub)
+auxFile <- paste0(inDir,"/4_t_w.csv")
 
 # load input data
 df <- read.csv(inputFile)

@@ -11,11 +11,16 @@ library(tidyverse)
 library(lubridate)
 library(sf)
 
-fileName <- "E:/active/project/calfire_gedi/rq2_paper/data/fire_csvs/2_strct_sev_2024_8_9.csv"
+# working directory
+indir <- "/GEDI_wildfire_structural_change"
+
+# input file name with GEDI structure (zipped in GitHub)
+fileName <- paste0(indir,"/2_strct_sev_2024_8_9.csv")
 
 excludeFires <- c("BLUEJAY")
 
-fgdb <- "E:/active/project/calfire_gedi/treatments/calfire_gedi_treatments.gdb"
+# file geodatabase with vector layers (zipped in GitHub)
+fgdb <- paste0(indir,"/calfire_gedi_treatments.gdb")
 
 # load fire GEDI data
 df1 <- read.csv(fileName)
@@ -71,5 +76,6 @@ df6 <- df5 %>% filter(
 df7 <- df6 %>% select(!c("StartDate","EndDate"))
 
 # write out GEDI fire master .csv file
-write.csv(df7, "E:/active/project/calfire_gedi/rq2_paper/data/master_gedi_fire_data_240809.csv", row.names = FALSE)
+outfile <- paste0(indir,"/master_gedi_fire_data_240809.csv")
+write.csv(df7, outfile, row.names = FALSE)
 

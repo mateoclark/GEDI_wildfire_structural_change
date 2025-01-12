@@ -16,8 +16,7 @@ library(foreach)
 library(doParallel)
 
 # working directory
-indir <- "G:/Shared drives/CALFIRE_GEDI/Manuscripts/RQ2_wildfire_change_in_footprint_metrics"
-#indir <- "E:/active/project/calfire_gedi/rq2_paper"
+indir <- "/GEDI_wildfire_structural_change"
 
 # Detect the number of available cores
 #numCores <- detectCores() - 1
@@ -52,10 +51,10 @@ k <- 50
 predictors <- c("mtbs_dnbrOW", "topoSlope","timeAfter","prefireMetric","vpd","windSpeed","et")
 
 # input .csv file with GEDI metric differences
-inputFile <- paste0(indir,"/data/master_gedi_fire_difference_",distance,"m_240822.csv")
+inputFile <- paste0(indir,"/master_gedi_fire_difference_",distance,"m_240822.csv")
 
 # GEDI metrics
-metrics <- read.csv(paste0(indir,"/data/gedi_structure_variables_reduced_pai_240927.csv"))
+metrics <- read.csv(paste0(indir,"/gedi_structure_variables_reduced_pai_240927.csv"))
 metrics <- metrics %>% filter(selected == "Y")
 metrics$metricDelta <- paste0("delta_",c(metrics$metric))
 metricsDelta <- metrics$metricDelta
@@ -207,7 +206,7 @@ process_predictor_metric <- function(predictor, metricsDelta, dataFiltered, dist
       remove(W)
     }
   }
-  outputFile <- paste0(indir,"/data/univariate_spatialreg_abgd",biomass,"Mghayr_elev",delta_elev,"m_dist",distance,"m_",predictor,"_zscore_maxBefore",maxBefore,"_minAfter",minAfter,"_maxAfter",maxAfter,"_",version,".csv")
+  outputFile <- paste0(indir,"/univariate_spatialreg_abgd",biomass,"Mghayr_elev",delta_elev,"m_dist",distance,"m_",predictor,"_zscore_maxBefore",maxBefore,"_minAfter",minAfter,"_maxAfter",maxAfter,"_",version,".csv")
   write.csv(output,outputFile,row.names = F)
 }
 
