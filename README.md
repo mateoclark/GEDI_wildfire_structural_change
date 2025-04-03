@@ -1,6 +1,11 @@
 # GEDI_wildfire_structural_change
  Code and data for paper "Changes in GEDI-based measures of forest structure after large California wildfires relative to pre-fire conditions"
 
+Clark, M. L., Hakkenberg, C. R., Bailey, T., Burns, P., & Goetz, S. (2025). 
+Changes in Gedi-Based Measures of Forest Structure after Large California Wildfires Relative to Pre-Fire Conditions. 
+Remote Sensing of Environment, 323, 114718, ISSN 0034-4257, https://doi.org/10.1016/j.rse.2025.114718.
+(https://www.sciencedirect.com/science/article/pii/S0034425725001221)
+
 Matthew L. Clark, Ph.D.  
 Department of Geography, Environment, and Planning  
 Sonoma State University, California USA  
