@@ -40,6 +40,10 @@ matthew.clark@sonoma.edu
 *gedi_structure_variables_reduced_pai_240927.csv*  
 - Full GEDI metrics list, including a "selected" column to indicate which metrics to analyze.
 
+**Large files in Google Drive**
+
+https://drive.google.com/drive/folders/1rI_vNHNTUfg7jWLyQ0Z4VqzPITUvlfIV?usp=sharing
+
 *2_strct_sev_2024_8_9.zip*
 - GEDI structural metrics CSV file
 
